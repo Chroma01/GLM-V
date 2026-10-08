@@ -51,7 +51,7 @@ _VERIFIER_REGISTRY: dict[str, type[Verifier]] = {
     "osworld": FileBasedVerifier,
     "webvoyager": FileBasedVerifier,
 }
-_VERIFIER_INSTANCE_REGISTRY: dict[str, Verifier] = {}
+_VERIFIER_INSTANCE_REGISTRY: dict[tuple[str, str, bytes], Verifier] = {}
 
 
 _logger = get_logger(__name__)
@@ -72,7 +72,7 @@ def get_verifier_from_config(config: VerifierConfig, datasource: str) -> Verifie
         raise ValueError(err_msg)
 
     verifier_cls = _VERIFIER_REGISTRY[verifier_type]
-    verifier_instance_key = f"{datasource}@{verifier_type}"
+    verifier_instance_key = (datasource, verifier_type, msgspec.json.encode(config))
 
     if verifier_instance_key not in _VERIFIER_INSTANCE_REGISTRY:
         if verifier_cls == FileBasedVerifier:
