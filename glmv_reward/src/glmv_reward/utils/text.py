@@ -44,7 +44,8 @@ def find_boxed_content_with_boxed(text: str) -> list[str]:
                     content += text[i]
                 i += 1
 
-            results.append(content)
+            if brace_count == 0:
+                results.append(content)
         else:
             i += 1
     return results
