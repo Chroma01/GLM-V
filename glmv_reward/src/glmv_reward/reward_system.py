@@ -246,6 +246,22 @@ class RewardSystem(object):
         if answer_lengths is not None:
             answer_length_lst = ensure_list(answer_lengths)
 
+        batch_lengths = {
+            "answers": len(answer_lst),
+            "gt_answers": len(gt_answer_lst),
+            "image_files": len(image_file_lst),
+            "datasources": len(datasource_lst),
+            "answer_lengths": len(answer_length_lst),
+            "uuids": len(uuid_lst),
+        }
+        if any(length != len(prompt_lst) for length in batch_lengths.values()):
+            err_msg = f"All batch inputs must have the same length as prompts ({len(prompt_lst)}): {batch_lengths}"
+            raise ValueError(err_msg)
+        if not prompt_lst:
+            if return_extracted_answers:
+                return [], [], []
+            return []
+
         if len(set(datasource_lst)) != 1:
             err_msg = "all datasources should be the same"
             raise ValueError(err_msg)
@@ -275,7 +291,7 @@ class RewardSystem(object):
 
         else:
             # Create thread pool
-            with ThreadPoolExecutor(max_workers=min(128, len(prompts))) as executor:
+            with ThreadPoolExecutor(max_workers=min(128, len(prompt_lst))) as executor:
                 # Submit all tasks and store futures in order
                 futures = []
                 for prompt, answer, gt_answer, image_file in zip(prompt_lst, answer_lst, gt_answer_lst, image_file_lst):  # noqa: B905
